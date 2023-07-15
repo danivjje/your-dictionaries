@@ -1,8 +1,9 @@
 import { auth } from '@/api/firebase/firebase-init';
 import {
     GithubAuthProvider, GoogleAuthProvider, createUserWithEmailAndPassword,
-    signInWithEmailAndPassword, signInWithPopup, signOut
+    signInWithEmailAndPassword, signInWithPopup, signInWithRedirect, signOut
 } from '@firebase/auth';
+import router from '@/router';
 
 const googleProvider = new GoogleAuthProvider();
 const githubProvider = new GithubAuthProvider();
@@ -16,23 +17,23 @@ export const signInUser = async (email, password) => {
 }
 
 export const signOutUser = async () => {
-    signOut(auth);
+    try {
+        await signOut(auth);
+        router.push({ path: 'sign-in' });
+    } catch {
+        console.log('error', err);
+    }
 }
 
 export const signInUsingGoogle = async () => {
-    signInWithPopup(auth, googleProvider)
-        .then((result) => {
-            const credential = GoogleAuthProvider.credentialFromResult(result);
-            const token = credential.accessToken;
-            const user = result.user;
-            console.log(user);
-        }).catch((error) => {
-            const errorCode = error.code;
-            const errorMessage = error.message;
-            const credential = GoogleAuthProvider.credentialFromError(error);
-        });
+    try {
+        await signInWithPopup(auth, googleProvider);
+        router.push({ path: '/' })
+    } catch (err) {
+        console.log('error', err);
+    }
 }
 
 export const signInUsingGithub = async () => {
-    signInWithPopup(auth, githubProvider);
+    signInWithRedirect(auth, githubProvider);
 }

@@ -1,16 +1,36 @@
 <script setup>
-import DictionariesCollection from "@/components/dictionaries-collection.vue";
+import { data } from "@/api/test-api";
+import { signOutUser } from "@/api/firebase/firebase-requests";
 
-const data = [
-  { title: "grushko words", id: 1 },
-  { title: "grushko words", id: 2 },
-  { title: "grushko words", id: 3 },
-  { title: "grushko words", id: 4 },
-];
+import DictionariesCollection from "@/components/dictionaries-collection.vue";
+import GenerateWord from "@/components/generate-word.vue";
+
+const words = ["asssssssd", "htroijfohjf", "qwweeeee", "zxxcccc"];
 </script>
 
 <template>
-  <dictionaries-collection :title="'my collection'" :data="data" />
+  <div class="page">
+    <main-button
+      class="log-out-btn"
+      :borderPosition="'left'"
+      @click="signOutUser"
+      >log out from account</main-button
+    >
+    <generate-word :words="words" class="gen-btn" />
+    <dictionaries-collection :title="'my collection'" :data="data" />
+  </div>
 </template>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+.page {
+  padding: 0 15px;
+}
+
+.log-out-btn {
+  margin-bottom: 25px;
+}
+
+.gen-btn {
+  margin-bottom: 35px;
+}
+</style>

@@ -12,13 +12,21 @@ const { title } = defineProps({
     <h3>{{ title }}</h3>
     <div class="dictionary left-border">
       <div class="buttons-top-wrapper">
-        <button class="do-button edit-button"></button>
-        <button class="do-button pin-button"></button>
+        <button class="do-button icon-button edit-button"></button>
+
+        <toggle-icon-button
+          class="pin-button"
+          :activeIcon="'pin-icon.svg'"
+          :inactiveIcon="'unpin-icon.svg'"
+        />
       </div>
-      <button class="do-button plus-button"></button>
+      <button class="do-button icon-button plus-button"></button>
       <div class="buttons-bottom-wrapper">
-        <button class="do-button access-button"></button>
-        <button class="do-button delete-button"></button>
+        <toggle-icon-button
+          :activeIcon="'lock-icon.svg'"
+          :inactiveIcon="'unlock-icon.svg'"
+        />
+        <button class="do-button icon-button delete-button"></button>
       </div>
     </div>
   </li>
@@ -29,9 +37,10 @@ const { title } = defineProps({
   display: flex;
   align-items: center;
   flex-direction: column;
-  margin-bottom: 20px;
   max-width: 200px;
   width: 100%;
+  margin: 0 5px 15px 5px;
+  flex-grow: 0;
   h3 {
     font-size: 15px;
     font-weight: 400;
@@ -48,51 +57,46 @@ const { title } = defineProps({
     min-height: 200px;
     background-color: var(--background-color);
   }
-  &:not(:nth-child(5n)) {
-    margin-right: 20px;
-  }
 }
 
 .do-button {
   width: 28px;
   height: 28px;
-  border: none;
-  cursor: pointer;
-  background: transparent;
-  background-repeat: no-repeat;
-  background-size: contain;
 }
 
 .buttons-top-wrapper {
+  display: flex;
   position: absolute;
   top: 5px;
   left: 5px;
 }
 
 .buttons-bottom-wrapper {
+  display: flex;
   position: absolute;
   bottom: 5px;
   right: 5px;
+}
+
+.pin-button {
+  transform: scaleX(-1);
 }
 
 .edit-button {
   background-image: url("/icons/edit-icon.svg");
 }
 
-.pin-button {
-  background-image: url("/icons/pin-icon.svg");
-  transform: scaleX(-1);
-}
-
 .plus-button {
   background-image: url("/icons/add-icon.svg");
 }
 
-.access-button {
-  background-image: url("/icons/lock-icon.svg");
-}
-
 .delete-button {
   background-image: url("/icons/remove-icon.svg");
+}
+
+@media screen and (max-width: 576px) {
+  .item {
+    max-width: 100%;
+  }
 }
 </style>

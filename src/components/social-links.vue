@@ -1,20 +1,17 @@
 <script setup>
-const emit = defineEmits(["ongoogle", "ongithub"]);
+import { signInUsingGoogle } from "@/api/firebase/firebase-requests";
 </script>
 
 <template>
   <ul>
     <li>
       <button
-        @click="emit('ongoogle')"
+        @click="signInUsingGoogle"
         style="background-image: url('/icons/google-icon.svg')"
       ></button>
     </li>
     <li>
-      <button
-        @click="emit('ongithub')"
-        style="background-image: url('/icons/github-icon.svg')"
-      ></button>
+      <button style="background-image: url('/icons/github-icon.svg')"></button>
     </li>
   </ul>
 </template>

@@ -1,17 +1,22 @@
 <script setup>
 import { reactive } from "vue";
-
-import { signInUsingGoogle } from "@/api/firebase/firebase-requests";
-import { signInUsingGithub } from "@/api/firebase/firebase-requests";
+import { signUpUser } from "@/api/firebase/firebase-requests";
+import { useStore } from "@/composables/use-store";
 
 import SocialLinks from "@/components/social-links.vue";
 
+const { loaderStore } = useStore();
 const userData = reactive({
   username: "",
   email: "",
   password: "",
   repeatPassword: "",
 });
+
+const handleSignUp = async () => {
+  loaderStore.startLoading();
+  setTimeout(() => loaderStore.finishLoading(), 3000);
+};
 </script>
 
 <template>
@@ -49,12 +54,15 @@ const userData = reactive({
         borderPosition="bottom"
         v-model="userData.repeatPassword"
       />
-      <main-button class="submit-button" borderPosition="bottom"
+      <main-button
+        @click="handleSignUp"
+        class="submit-button"
+        borderPosition="bottom"
         >sign up</main-button
       >
     </form>
 
-    <social-links @ongoogle="signInUsingGoogle" @ongithub="signInUsingGithub" />
+    <social-links />
   </div>
 </template>
 

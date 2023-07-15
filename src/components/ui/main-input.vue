@@ -20,7 +20,8 @@ const { placeholder, required, borderPosition } = defineProps({
 <style scoped lang="scss">
 input {
   width: 100%;
-  font-size: 15px;
+  font-size: 16px;
+  line-height: 18px;
   background-color: var(--background-color);
   border: none;
   padding: 10px 25px;
