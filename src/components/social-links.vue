@@ -1,17 +1,54 @@
-<script setup>
-import { signInUsingGoogle } from "@/api/firebase/firebase-requests";
+<script setup lang="ts">
+import {
+  signInUsingGoogle,
+  signInUsingGithub,
+} from "@/helpers/firebase/firebase-requests";
+import { useStores } from "@/composables/use-stores";
+import { useRouter } from "vue-router";
+
+const { commonStore } = useStores();
+const router = useRouter();
+
+const handleSignInUsingGoogle = async () => {
+  try {
+    commonStore.startLoading();
+    await signInUsingGoogle();
+    await commonStore.changeCurrentUser();
+  } catch (err) {
+    console.log("error: ", err);
+  } finally {
+    router.push({ path: "/" });
+    commonStore.finishLoading();
+  }
+};
+
+const handleSignInUsingGithub = async () => {
+  try {
+    commonStore.startLoading();
+    await signInUsingGithub();
+    await commonStore.changeCurrentUser();
+  } catch (err) {
+    console.log("error: ", err);
+  } finally {
+    router.push({ path: "/" });
+    commonStore.finishLoading();
+  }
+};
 </script>
 
 <template>
   <ul>
     <li>
       <button
-        @click="signInUsingGoogle"
+        @click="handleSignInUsingGoogle"
         style="background-image: url('/icons/google-icon.svg')"
       ></button>
     </li>
     <li>
-      <button style="background-image: url('/icons/github-icon.svg')"></button>
+      <button
+        @click="handleSignInUsingGithub"
+        style="background-image: url('/icons/github-icon.svg')"
+      ></button>
     </li>
   </ul>
 </template>

@@ -1,26 +1,17 @@
-<script setup>
-import { ref } from "vue";
+<script setup lang="ts">
+import { Ref, ref } from "vue";
 
-const { activeIcon, inactiveIcon, defaultValue } = defineProps({
-  activeIcon: {
-    type: String,
-    required: true,
-  },
-  inactiveIcon: {
-    type: String,
-    required: true,
-  },
-  defaultValue: {
-    type: Boolean,
-    // required: true
-  },
-});
+const emit = defineEmits(["toggle"]);
+const { activeIcon, inactiveIcon, defaultValue } = defineProps<{
+  activeIcon: string;
+  inactiveIcon: string;
+  defaultValue: boolean;
+}>();
 
-const isActive = ref(defaultValue);
-const emit = defineEmits(["ontoggle"]);
+const isActive: Ref<boolean> = ref(defaultValue);
 
-const toggleActive = () => {
-  emit("ontoggle", !isActive.value);
+const handleToggleIcon = () => {
+  emit("toggle");
   isActive.value = !isActive.value;
 };
 </script>
@@ -30,13 +21,13 @@ const toggleActive = () => {
     <transition name="icon">
       <button
         v-if="isActive"
-        @click="toggleActive"
+        @click="handleToggleIcon"
         class="icon-button"
         :style="`background-image: url(/icons/${activeIcon})`"
       ></button>
       <button
         v-else
-        @click="toggleActive"
+        @click="handleToggleIcon"
         class="icon-button"
         :style="`background-image: url(icons/${inactiveIcon})`"
       ></button>

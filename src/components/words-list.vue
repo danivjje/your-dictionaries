@@ -1,12 +1,10 @@
-<script setup>
+<script setup lang="ts">
 import WordItem from "@/components/word-item.vue";
+import { IDictionaryWord } from "@/types/interfaces";
 
-const { words } = defineProps({
-  words: {
-    type: Array,
-    required: true,
-  },
-});
+const { words } = defineProps<{
+  words: IDictionaryWord[];
+}>();
 </script>
 
 <template>

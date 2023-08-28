@@ -1,7 +1,7 @@
-<script setup>
-import { ref } from "vue";
+<script setup lang="ts">
+import { ref, Ref } from "vue";
 
-const word = ref("");
+const word: Ref<string> = ref("");
 </script>
 
 <template>
@@ -13,9 +13,9 @@ const word = ref("");
       :borderPosition="'left'"
       v-model="word"
     />
-    <main-button class="submit-button" :borderPosition="'left'"
-      >add</main-button
-    >
+    <main-button class="submit-button" :borderPosition="'left'">
+      add
+    </main-button>
   </form>
 </template>
 

@@ -1,15 +1,13 @@
-<script setup>
-const { word } = defineProps({
-  word: {
-    type: Object,
-    required: true,
-  },
-});
+<script setup lang="ts">
+import { IDictionaryWord } from "@/types/interfaces";
+
+const { word } = defineProps<{
+  word: IDictionaryWord;
+}>();
 </script>
 
 <template>
   <li class="item">
-    <!-- <button class="icon-button favorite-button"></button> -->
     <toggle-icon-button
       class="favorite-button"
       :activeIcon="'favorite-icon.svg'"

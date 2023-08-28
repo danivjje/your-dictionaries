@@ -1,9 +1,8 @@
-<script setup>
-const { color } = defineProps({
-  color: String,
-});
-
-const cssVariable = color ? `var(--${color}-color)` : "";
+<script setup lang="ts">
+const { color } = defineProps<{
+  color: string;
+}>();
+const cssVariable: string = color ? `var(--${color}-color)` : "";
 </script>
 
 <template>

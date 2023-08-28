@@ -1,11 +1,8 @@
-<script setup>
-const { borderPosition } = defineProps({
-  borderPosition: {
-    type: String,
-    required: true,
-  },
-  danger: Boolean,
-});
+<script setup lang="ts">
+const { borderPosition } = defineProps<{
+  borderPosition: string;
+  danger?: boolean;
+}>();
 </script>
 
 <template>

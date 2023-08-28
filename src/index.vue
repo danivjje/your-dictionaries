@@ -1,12 +1,18 @@
-<script setup>
-import { useStore } from "@/composables/use-store";
-import Loader from "@/components/ui/loader.vue";
+<script setup lang="ts">
+import { useStores } from "@/composables/use-stores";
 
-const { loaderStore } = useStore();
+import Loader from "@/components/ui/loader.vue";
+import Notification from "@/components/ui/notification.vue";
+
+const { commonStore } = useStores();
 </script>
 
 <template>
-  <loader :isVisible="loaderStore.isLoading" />
+  <loader :isVisible="commonStore.isLoading" />
+  <notification
+    :isShowed="commonStore.notification.isShowed"
+    :text="commonStore.notification.text"
+  />
 
   <router-view v-slot="{ Component }">
     <transition name="route" mode="out-in">
@@ -15,11 +21,7 @@ const { loaderStore } = useStore();
   </router-view>
 </template>
 
-<style lang="scss">
-@import url("@/assets/scss/variables.scss");
-@import url("@/assets/scss/fonts.scss");
-@import url("@/assets/scss/global.scss");
-
+<style scoped lang="scss">
 .route-enter-active,
 .route-leave-active {
   transition-property: opacity, transform;

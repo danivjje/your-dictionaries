@@ -1,19 +1,17 @@
-<script setup>
-const { placeholder, required, borderPosition } = defineProps({
-  borderPosition: {
-    type: String,
-    required: true,
-  },
-  modelValue: String,
-  required: Boolean,
-});
+<script setup lang="ts">
+defineEmits(["update:modelValue"]);
+
+const { borderPosition } = defineProps<{
+  borderPosition?: string;
+  modelValue: string;
+}>();
 </script>
 
 <template>
   <input
     :class="borderPosition + '-border'"
     :value="modelValue"
-    @input="$emit('update:modelValue', $event.target.value)"
+    @input="$emit('update:modelValue', (<HTMLInputElement>$event.target).value)"
   />
 </template>
 

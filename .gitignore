@@ -12,9 +12,17 @@ dist
 dist-ssr
 *.local
 
-.vscode
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
 .idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
 
-.env
-
+# other
 src/views/test-page.vue
+.env

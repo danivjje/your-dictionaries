@@ -1,11 +1,57 @@
-<script setup>
-import { data } from "@/api/test-api";
-import { signOutUser } from "@/api/firebase/firebase-requests";
+<script setup lang="ts">
+import { signOutUser } from "@/helpers/firebase/firebase-requests";
+import { useStores } from "@/composables/use-stores";
+import { useRouter } from "vue-router";
+import { Ref, onMounted, ref } from "vue";
 
 import DictionariesCollection from "@/components/dictionaries-collection.vue";
 import GenerateWord from "@/components/generate-word.vue";
 
-const words = ["asssssssd", "htroijfohjf", "qwweeeee", "zxxcccc"];
+const { commonStore, dictionariesStore } = useStores();
+const router = useRouter();
+const words: Ref<string[]> = ref([]);
+
+const handleSignOut = async (): Promise<void> => {
+  try {
+    commonStore.startLoading();
+    await signOutUser();
+    dictionariesStore.clearDictionariesList();
+    commonStore.useNotification("logout: successfully");
+    router.push({ path: "/sign-in" });
+  } catch (err) {
+    commonStore.useNotification(
+      "logout: oops.. unknown error, try again or reload the page (f5). sorry =("
+    );
+  } finally {
+    commonStore.finishLoading();
+  }
+};
+
+onMounted(async () => {
+  dictionariesStore.clearDictionariesList();
+  words.value.length = 0;
+
+  await dictionariesStore.fetchDictionaries();
+  dictionariesStore.sortByPinned();
+
+  words.value.push(
+    ...dictionariesStore.dictionaries.reduce(
+      (totalWords: string[], dictionary) => {
+        const dictionaryWords = dictionary.words.reduce(
+          (dicWords: string[], word) => {
+            dicWords.push(word.word);
+            return dicWords;
+          },
+          []
+        );
+
+        totalWords.push(...dictionaryWords);
+        return totalWords;
+      },
+      []
+    )
+  );
+});
 </script>
 
 <template>
@@ -13,11 +59,14 @@ const words = ["asssssssd", "htroijfohjf", "qwweeeee", "zxxcccc"];
     <main-button
       class="log-out-btn"
       :borderPosition="'left'"
-      @click="signOutUser"
+      @click="handleSignOut"
       >log out from account</main-button
     >
     <generate-word :words="words" class="gen-btn" />
-    <dictionaries-collection :title="'my collection'" :data="data" />
+    <dictionaries-collection
+      :title="'my collection'"
+      :data="dictionariesStore.dictionaries"
+    />
   </div>
 </template>
 
@@ -27,7 +76,7 @@ const words = ["asssssssd", "htroijfohjf", "qwweeeee", "zxxcccc"];
 }
 
 .log-out-btn {
-  margin-bottom: 25px;
+  margin-bottom: 15px;
 }
 
 .gen-btn {

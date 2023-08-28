@@ -1,21 +1,42 @@
-<script setup>
+<script setup lang="ts">
+import { signUpUser } from "@/helpers/firebase/firebase-requests";
+import { useStores } from "@/composables/use-stores";
+import { useRouter } from "vue-router";
 import { reactive } from "vue";
-import { signUpUser } from "@/api/firebase/firebase-requests";
-import { useStore } from "@/composables/use-store";
+import { AUTH_ERRORS_MESSAGES } from "@/assets/constants/auth-errors-messages";
 
 import SocialLinks from "@/components/social-links.vue";
 
-const { loaderStore } = useStore();
+const router = useRouter();
+const { commonStore } = useStores();
 const userData = reactive({
-  username: "",
   email: "",
   password: "",
   repeatPassword: "",
 });
 
-const handleSignUp = async () => {
-  loaderStore.startLoading();
-  setTimeout(() => loaderStore.finishLoading(), 3000);
+const handleRegistration = async (): Promise<void> => {
+  if (
+    userData.email &&
+    userData.password &&
+    userData.password === userData.repeatPassword
+  ) {
+    try {
+      commonStore.startLoading();
+      await signUpUser(userData.email.trim(), userData.password.trim());
+      await commonStore.changeCurrentUser();
+      commonStore.useNotification("registration: successfully");
+      router.push({ path: "/" });
+    } catch (error) {
+      if (error instanceof Error) {
+        if (error.message in AUTH_ERRORS_MESSAGES) {
+          commonStore.useNotification(AUTH_ERRORS_MESSAGES[error.message]);
+        }
+      }
+    } finally {
+      commonStore.finishLoading();
+    }
+  }
 };
 </script>
 
@@ -27,39 +48,29 @@ const handleSignUp = async () => {
         (or click here, if you are already registered)
       </h1>
     </router-link>
-    <form @submit.prevent>
-      <main-input
-        class="input"
-        placeholder="your username"
-        type="text"
-        borderPosition="top"
-        v-model="userData.username"
-      />
+    <form @submit.prevent="handleRegistration">
       <main-input
         class="input"
         placeholder="your email"
         type="email"
-        borderPosition="bottom"
+        borderPosition="top"
         v-model="userData.email"
       />
       <password-input
         class="input"
         :placeholder="'your password'"
-        borderPosition="top"
+        borderPosition="bottom"
         v-model="userData.password"
       />
       <password-input
         class="input"
         :placeholder="'repeat your password, please'"
-        borderPosition="bottom"
+        borderPosition="top"
         v-model="userData.repeatPassword"
       />
-      <main-button
-        @click="handleSignUp"
-        class="submit-button"
-        borderPosition="bottom"
-        >sign up</main-button
-      >
+      <main-button class="submit-button" borderPosition="bottom">
+        sign up
+      </main-button>
     </form>
 
     <social-links />

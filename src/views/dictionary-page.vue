@@ -1,35 +1,61 @@
-<script setup>
+<script setup lang="ts">
+import { useRoute } from "vue-router";
+import { getDictionary } from "@/helpers/firebase/firebase-requests";
+import { ref, computed, Ref, onMounted } from "vue";
+import { useStores } from "@/composables/use-stores";
+import { IDictionary, IDictionaryWord } from "@/types/interfaces";
+
 import AddWordForm from "@/components/add-word-form.vue";
 import GenerateWord from "@/components/generate-word.vue";
 import WordsList from "@/components/words-list.vue";
 
-const words = [
-  {
-    word: "скинхеду",
-    isFavorite: false,
-    creationDate: "7/14/2023",
-  },
-  {
-    word: "яйца",
-    isFavorite: false,
-    creationDate: "7/14/2023",
-  },
-  {
-    word: "отрежу",
-    isFavorite: false,
-    creationDate: "7/14/2023",
-  },
-  {
-    word: "борщик",
-    isFavorite: false,
-    creationDate: "7/14/2023",
-  },
-  {
-    word: "когда",
-    isFavorite: false,
-    creationDate: "7/14/2023",
-  },
-];
+const route = useRoute();
+const { commonStore } = useStores();
+
+const dictionary: Ref<IDictionary | undefined> = ref();
+const words: Ref<IDictionaryWord[]> = ref([]);
+const wordsInWords = computed<string[]>(() => {
+  return words.value.reduce((totalWords: string[], word) => {
+    totalWords.push(word.word);
+
+    return totalWords;
+  }, []);
+});
+
+let dictionaryId: string = "";
+if (Array.isArray(route.params.id)) {
+  dictionaryId = route.params.id[0];
+} else {
+  dictionaryId = route.params.id;
+}
+
+onMounted(async () => {
+  if ("uid" in commonStore.currentUser) {
+    try {
+      commonStore.startLoading();
+      const fetchedDictionary = await getDictionary(
+        commonStore.currentUser.uid,
+        dictionaryId
+      );
+
+      if (fetchedDictionary) {
+        dictionary.value = fetchedDictionary;
+
+        words.value.push(
+          ...dictionary.value.words.reduce((words: IDictionaryWord[], word) => {
+            words.push(word);
+
+            return words;
+          }, [])
+        );
+      }
+    } catch (err) {
+      console.log(err);
+    } finally {
+      commonStore.finishLoading();
+    }
+  }
+});
 </script>
 
 <template>
@@ -39,14 +65,11 @@ const words = [
     </router-link>
 
     <div class="title-wrapper">
-      <h1>dictionary title</h1>
+      <h1>{{ dictionary?.title }}</h1>
       <button class="edit-button icon-button"></button>
     </div>
     <div class="header-buttons">
-      <generate-word
-        class="gen-btn"
-        :words="['скинхеду', 'яйца', 'отрежу', 'борщик', 'когда']"
-      />
+      <generate-word class="gen-btn" :words="wordsInWords" />
       <add-word-form />
     </div>
     <words-list :words="words" />
@@ -122,6 +145,9 @@ const words = [
   margin-top: auto;
   header {
     margin-bottom: 20px;
+    .text-span {
+      margin-right: 10px;
+    }
   }
   footer {
     button:not(:last-child) {
