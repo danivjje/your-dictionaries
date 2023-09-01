@@ -80,7 +80,7 @@ const handleAddWord = (): void => {
   font-weight: 400;
   width: 80px;
   flex-shrink: 0;
-  transform: translateY(27px) rotate(90deg);
+  transform: translateY(72%) rotate(90deg);
   height: fit-content;
 }
 </style>

@@ -10,7 +10,7 @@ const { activeIcon, inactiveIcon, defaultValue } = defineProps<{
 
 const isActive: Ref<boolean> = ref(defaultValue);
 
-const handleToggleIcon = () => {
+const handleToggleIcon = (): void => {
   emit("toggle");
   isActive.value = !isActive.value;
 };
@@ -22,14 +22,14 @@ const handleToggleIcon = () => {
       <button
         v-if="isActive"
         @click="handleToggleIcon"
-        class="icon-button"
         :style="`background-image: url(/icons/${activeIcon})`"
+        class="icon-button"
       ></button>
       <button
         v-else
         @click="handleToggleIcon"
+        :style="`background-image: url(/icons/${inactiveIcon})`"
         class="icon-button"
-        :style="`background-image: url(icons/${inactiveIcon})`"
       ></button>
     </transition>
   </div>

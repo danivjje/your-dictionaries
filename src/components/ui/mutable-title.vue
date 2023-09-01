@@ -1,9 +1,17 @@
 <script setup lang="ts">
+import { ref, Ref } from "vue";
+
 defineEmits(["update:modelValue"]);
 const { isEdit } = defineProps<{
   isEdit: boolean;
   modelValue: string;
 }>();
+
+const inputReference: Ref<null | HTMLInputElement> = ref(null);
+
+defineExpose({
+  inputReference,
+});
 </script>
 
 <template>
@@ -12,12 +20,11 @@ const { isEdit } = defineProps<{
       <h1 v-if="!isEdit" class="title">{{ modelValue }}</h1>
       <input
         v-else
+        @input="$emit('update:modelValue', (<HTMLInputElement>$event.target).value)"
+        :value="modelValue"
         class="input left-border"
         type="text"
-        :value="modelValue"
-        @input="
-          $emit('update:modelValue', (<HTMLInputElement>$event.target).value)
-        "
+        ref="inputReference"
       />
     </transition>
   </div>
@@ -45,7 +52,6 @@ div {
   background-color: var(--background-color);
   border: none;
   padding: 10px 25px;
-  flex-shrink: 0;
   position: absolute;
   bottom: 0;
   &:focus {
@@ -56,7 +62,7 @@ div {
 .toggle-enter-active,
 .toggle-leave-active {
   transition-property: opacity, transform;
-  transition-duration: 350ms;
+  transition-duration: 250ms;
   transition-timing-function: cubic-bezier(0.165, 0.84, 0.44, 1);
 }
 

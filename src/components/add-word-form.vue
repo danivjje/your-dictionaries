@@ -1,17 +1,23 @@
 <script setup lang="ts">
 import { ref, Ref } from "vue";
 
-const word: Ref<string> = ref("");
+const emit = defineEmits(["add-word"]);
+const newWord: Ref<string> = ref("");
+
+const handleAddWord = (): void => {
+  emit("add-word", newWord.value);
+  newWord.value = "";
+};
 </script>
 
 <template>
-  <form @submit.prevent>
+  <form @submit.prevent="handleAddWord">
     <main-input
       class="input"
       :placeholder="'enter a word'"
       :type="'text'"
       :borderPosition="'left'"
-      v-model="word"
+      v-model="newWord"
     />
     <main-button class="submit-button" :borderPosition="'left'">
       add

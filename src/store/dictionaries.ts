@@ -5,14 +5,15 @@ import {
   deleteDictionary,
   updateDictionaryValue,
   addDictionaryWord,
+  deleteDictionaryWord,
 } from "@/helpers/firebase/firebase-requests";
 import { IDictionary, IDictionaryWord } from "@/types/interfaces";
 import { defineStore } from "pinia";
 import { Ref, ref } from "vue";
 
 export const useDictionariesStore = defineStore("dictionaries", () => {
-  const dictionaries: Ref<IDictionary[]> = ref([]);
   const { commonStore } = useStores();
+  const dictionaries: Ref<IDictionary[]> = ref([]);
 
   const sortByPinned = (): void => {
     dictionaries.value = dictionaries.value.sort((first, second) => {
@@ -32,9 +33,7 @@ export const useDictionariesStore = defineStore("dictionaries", () => {
     try {
       commonStore.startLoading();
       if ("uid" in commonStore.currentUser) {
-        const fetchedDictionaries = await getDictionaries(
-          commonStore.currentUser.uid
-        );
+        const fetchedDictionaries = await getDictionaries(commonStore.currentUser.uid);
         if (fetchedDictionaries.length > 0) {
           dictionaries.value.push(...fetchedDictionaries);
         }
@@ -58,17 +57,12 @@ export const useDictionariesStore = defineStore("dictionaries", () => {
     try {
       commonStore.startLoading();
       if ("uid" in commonStore.currentUser) {
-        const newID = await postDictionary(
-          commonStore.currentUser.uid,
-          dictionary
-        );
+        const newID = await postDictionary(commonStore.currentUser.uid, dictionary);
         dictionaries.value.push(Object.assign(dictionary, { id: newID }));
       }
     } catch (err) {
       console.log("err", err);
-      commonStore.useNotification(
-        "an error occurred during item creating, try again or reload the page. sorry =("
-      );
+      commonStore.useNotification("an error occurred during item creating, try again or reload the page. sorry =(");
     } finally {
       commonStore.finishLoading();
     }
@@ -86,31 +80,19 @@ export const useDictionariesStore = defineStore("dictionaries", () => {
       }
     } catch (err) {
       console.log("err: ", err);
-      commonStore.useNotification(
-        "an error occurred during dictionary deleting, try again or reload the page. sorry =("
-      );
+      commonStore.useNotification("an error occurred during dictionary deleting, try again or reload the page. sorry =(");
     } finally {
       commonStore.finishLoading();
     }
   };
 
-  const editDictionaryName = async (
-    dictionaryId: string,
-    newTitle: string
-  ): Promise<void> => {
+  const editDictionaryName = async (dictionaryId: string, newTitle: string): Promise<void> => {
     try {
       commonStore.startLoading();
       if ("uid" in commonStore.currentUser) {
-        await updateDictionaryValue(
-          commonStore.currentUser.uid,
-          dictionaryId,
-          "title",
-          newTitle
-        );
-        const dictionaryIndex = dictionaries.value.findIndex((item) => {
-          return item.id === dictionaryId;
-        });
-        dictionaries.value[dictionaryIndex].title = newTitle;
+        await updateDictionaryValue(commonStore.currentUser.uid, dictionaryId, "title", newTitle);
+        const dictionaryIndex = dictionaries.value.findIndex((item) => item.id === dictionaryId);
+        if (dictionaryIndex !== -1) dictionaries.value[dictionaryIndex].title = newTitle;
       }
     } catch (err) {
       console.log("err: ", err);
@@ -119,22 +101,13 @@ export const useDictionariesStore = defineStore("dictionaries", () => {
     }
   };
 
-  const toggleDictionaryPrivateStatus = async (
-    dictionaryId: string,
-    newValue: boolean
-  ): Promise<void> => {
+  const toggleDictionaryPrivateStatus = async (dictionaryId: string, newValue: boolean): Promise<void> => {
     try {
       if ("uid" in commonStore.currentUser) {
-        const dictionaryIndex = dictionaries.value.findIndex((item) => {
-          return item.id === dictionaryId;
-        });
-        await updateDictionaryValue(
-          commonStore.currentUser.uid,
-          dictionaryId,
-          "isPrivate",
-          newValue
-        );
-        dictionaries.value[dictionaryIndex].isPrivate = newValue;
+        await updateDictionaryValue(commonStore.currentUser.uid, dictionaryId, "isPrivate", newValue);
+
+        const dictionaryIndex: number = dictionaries.value.findIndex((item) => item.id === dictionaryId);
+        if (dictionaryIndex !== -1) dictionaries.value[dictionaryIndex].isPrivate = newValue;
       }
     } catch (err) {
       console.log("err: ", err);
@@ -145,34 +118,69 @@ export const useDictionariesStore = defineStore("dictionaries", () => {
     dictionaries.value = [];
   };
 
-  const addWordInDictionary = async (
+  const addWordInDictionary = async (dictionaryId: string, newWord: string, words?: IDictionaryWord[]): Promise<void> => {
+    if ("uid" in commonStore.currentUser) {
+      if (newWord) {
+        try {
+          commonStore.startLoading();
+
+          const date = new Date();
+          const newDictionaryWord: IDictionaryWord = {
+            word: newWord,
+            isFavorite: false,
+            creationDate: `${date.getDate()}/${date.getMonth()}/${date.getFullYear()}`,
+          };
+
+          await addDictionaryWord(commonStore.currentUser.uid, dictionaryId, newDictionaryWord);
+          if (words) {
+            const hasThisWord: boolean = words.some((item) => item.word === newWord);
+            if (!hasThisWord) {
+              words.push(newDictionaryWord);
+            } else {
+              commonStore.useNotification("this dictionary already has this word");
+            }
+          } else {
+            const dictionaryIndex = dictionaries.value.findIndex((item) => item.id === dictionaryId);
+            const hasThisWord: boolean = dictionaries.value[dictionaryIndex].words.some((item) => item.word === newWord);
+            if (!hasThisWord) {
+              dictionaries.value[dictionaryIndex].words.push(newDictionaryWord);
+            } else {
+              commonStore.useNotification("this dictionary already has this word");
+            }
+          }
+        } catch (err) {
+          console.log(err);
+          commonStore.useNotification("unknown error: try again or reload the page. sorry =(");
+        } finally {
+          commonStore.finishLoading();
+        }
+      } else {
+        commonStore.useNotification("the field must not be empty", 2000);
+      }
+    }
+  };
+
+  const removeWordFromDictionary = async (
     dictionaryId: string,
-    newWord: string
-  ): Promise<void> => {
+    word: IDictionaryWord,
+    words?: IDictionaryWord[],
+  ): Promise<void | IDictionaryWord[]> => {
     if ("uid" in commonStore.currentUser) {
       try {
         commonStore.startLoading();
+        await deleteDictionaryWord(commonStore.currentUser.uid, dictionaryId, word);
 
-        const date = new Date();
-        const newDictionaryWord: IDictionaryWord = {
-          word: newWord,
-          isFavorite: false,
-          creationDate: `${date.getDate()}/${date.getMonth()}/${date.getFullYear()}`,
-        };
-
-        const dictionaryIndex = dictionaries.value.findIndex(
-          (item) => item.id === dictionaryId
-        );
-        dictionaries.value[dictionaryIndex].words.push(newDictionaryWord);
-        await addDictionaryWord(
-          commonStore.currentUser.uid,
-          dictionaries.value[dictionaryIndex].id,
-          newDictionaryWord
-        );
+        if (words) {
+          return words.filter((item) => item.word !== word.word);
+        } else {
+          const dictionaryIndex = dictionaries.value.findIndex((item) => item.id === dictionaryId);
+          dictionaries.value[dictionaryIndex].words = dictionaries.value[dictionaryIndex].words.filter((item) => {
+            return item.word !== word.word;
+          });
+        }
       } catch (err) {
-        commonStore.useNotification(
-          "unknown error: try again or reload the page. sorry =("
-        );
+        console.log(err);
+        commonStore.useNotification("unknown error. try again or reload the page. sorry =(");
       } finally {
         commonStore.finishLoading();
       }
@@ -189,5 +197,6 @@ export const useDictionariesStore = defineStore("dictionaries", () => {
     clearDictionariesList,
     sortByPinned,
     addWordInDictionary,
+    removeWordFromDictionary,
   };
 });

@@ -72,7 +72,7 @@ onMounted(async () => {
 
 <style scoped lang="scss">
 .page {
-  padding: 0 15px;
+  padding: 10px 15px;
 }
 
 .log-out-btn {

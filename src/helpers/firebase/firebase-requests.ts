@@ -16,28 +16,18 @@ import {
   getDocs,
   setDoc,
   updateDoc,
+  arrayRemove,
 } from "firebase/firestore";
 
 import { database as db } from "@/helpers/firebase/firebase-init";
 import { auth } from "@/helpers/firebase/firebase-init";
-import {
-  IDictionary,
-  IDictionaryWord,
-  IUserInformation,
-} from "@/types/interfaces";
+import { IDictionary, IDictionaryWord, IUserInformation } from "@/types/interfaces";
 
 const googleProvider = new GoogleAuthProvider();
 const githubProvider = new GithubAuthProvider();
 
-export const signUpUser = async (
-  email: string,
-  password: string
-): Promise<void> => {
-  const userCredential = await createUserWithEmailAndPassword(
-    auth,
-    email,
-    password
-  );
+export const signUpUser = async (email: string, password: string): Promise<void> => {
+  const userCredential = await createUserWithEmailAndPassword(auth, email, password);
 
   const user = userCredential.user;
   await setDoc(doc(collection(db, "users", user.uid, "info")), {
@@ -45,10 +35,7 @@ export const signUpUser = async (
   });
 };
 
-export const signInUser = async (
-  email: string,
-  password: string
-): Promise<void> => {
+export const signInUser = async (email: string, password: string): Promise<void> => {
   await signInWithEmailAndPassword(auth, email, password);
 };
 
@@ -68,14 +55,8 @@ export const signInUsingGithub = async (): Promise<void> => {
   signInWithPopup(auth, githubProvider);
 };
 
-export const postDictionary = async (
-  uid: string,
-  dictionary: IDictionary
-): Promise<string> => {
-  const newDoc = await addDoc(
-    collection(db, "users", uid, "dictionaries"),
-    dictionary
-  );
+export const postDictionary = async (uid: string, dictionary: IDictionary): Promise<string> => {
+  const newDoc = await addDoc(collection(db, "users", uid, "dictionaries"), dictionary);
 
   const generatedId = newDoc.id;
   await updateDoc(doc(db, "users", uid, "dictionaries", generatedId), {
@@ -84,10 +65,7 @@ export const postDictionary = async (
   return generatedId;
 };
 
-export const deleteDictionary = async (
-  uid: string,
-  dictionaryId: string
-): Promise<void> => {
+export const deleteDictionary = async (uid: string, dictionaryId: string): Promise<void> => {
   await deleteDoc(doc(db, "users", uid, "dictionaries", dictionaryId));
 };
 
@@ -95,7 +73,7 @@ export const updateDictionaryValue = async (
   uid: string,
   dictionaryId: string,
   propertyName: string,
-  newValue: any
+  newValue: any,
 ): Promise<void> => {
   updateDoc(doc(db, "users", uid, "dictionaries", dictionaryId), {
     [propertyName]: newValue,
@@ -104,9 +82,7 @@ export const updateDictionaryValue = async (
 
 export const getDictionaries = async (uid: string): Promise<IDictionary[]> => {
   const dictionaries: IDictionary[] = [];
-  const querySnapshot = await getDocs(
-    collection(db, "users", uid, "dictionaries")
-  );
+  const querySnapshot = await getDocs(collection(db, "users", uid, "dictionaries"));
 
   const dataLength: number = querySnapshot.size;
   if (dataLength) {
@@ -120,9 +96,7 @@ export const getDictionaries = async (uid: string): Promise<IDictionary[]> => {
   return dictionaries;
 };
 
-export const getUserInformation = async (
-  uid: string
-): Promise<IUserInformation> => {
+export const getUserInformation = async (uid: string): Promise<IUserInformation> => {
   let information: IUserInformation = { email: "email was not recognized" };
   const querySnapshot = await getDocs(collection(db, "users", uid, "info"));
 
@@ -138,24 +112,39 @@ export const getUserInformation = async (
   return information;
 };
 
-export const getDictionary = async (
-  uid: string,
-  dictionaryId: string
-): Promise<IDictionary> => {
-  const fetchedDictionary = await getDoc(
-    doc(db, "users", uid, "dictionaries", dictionaryId)
-  );
+export const getDictionary = async (uid: string, dictionaryId: string): Promise<IDictionary> => {
+  const fetchedDictionary = await getDoc(doc(db, "users", uid, "dictionaries", dictionaryId));
   return fetchedDictionary.data() as IDictionary;
 };
 
-export const addDictionaryWord = async (
-  uid: string,
-  dictionaryId: string,
-  newWord: IDictionaryWord
-): Promise<void> => {
-  const userWordsRef = doc(db, "users", uid, "dictionaries", dictionaryId);
-
-  await updateDoc(userWordsRef, {
+export const addDictionaryWord = async (uid: string, dictionaryId: string, newWord: IDictionaryWord): Promise<void> => {
+  const dictionaryRef = doc(db, "users", uid, "dictionaries", dictionaryId);
+  await updateDoc(dictionaryRef, {
     words: arrayUnion(newWord),
   });
+};
+
+export const deleteDictionaryWord = async (uid: string, dictionaryId: string, word: IDictionaryWord): Promise<void> => {
+  const dictionaryRef = doc(db, "users", uid, "dictionaries", dictionaryId);
+  await updateDoc(dictionaryRef, {
+    words: arrayRemove(word),
+  });
+};
+
+export const toggleIsFavoriteWord = async (uid: string, dictionaryId: string, word: IDictionaryWord): Promise<void> => {
+  const updatedWord = { ...word, isFavorite: !word.isFavorite };
+  const dictionaryRef = doc(db, "users", uid, "dictionaries", dictionaryId);
+
+  const querySnapshot = await getDoc(dictionaryRef);
+  if (querySnapshot.exists()) {
+    const existingData = querySnapshot.data();
+    const newWords: IDictionaryWord[] = existingData.words.map((item: IDictionaryWord) => {
+      if (item.word === word.word) {
+        return updatedWord;
+      }
+      return item;
+    });
+
+    updateDoc(dictionaryRef, { words: newWords });
+  }
 };

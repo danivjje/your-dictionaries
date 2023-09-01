@@ -1,4 +1,7 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+// короче к какому-то булевому значению все равно открытие/скрытие "селекта" из словарей нужно добавить, скорее всего при получении данных буду
+// добавлять к каждой коллекции isShowed (использоваться, сохраняться и изменяться будет только в этом компоненте)
+</script>
 
 <template>
   <div class="modal left-border">
@@ -10,12 +13,11 @@
             <h3>collection title</h3>
             <toggle-icon-button
               class="toggle-button"
-              :activeIcon="'bottom-arrow-icon.svg'"
-              :inactiveIcon="'top-arrow-icon.svg'"
+              activeIcon="bottom-arrow-icon.svg"
+              inactiveIcon="top-arrow-icon.svg"
             />
           </div>
         </div>
-
         <ul class="dictionaries-list">
           <li>
             <main-checkbox color="background" class="checkbox" />
