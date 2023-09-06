@@ -2,16 +2,18 @@
 import { useStores } from "@/composables/use-stores";
 
 import Loader from "@/components/ui/loader.vue";
+import Confirm from "@/components/ui/confirm.vue";
 import Notification from "@/components/ui/notification.vue";
 
 const { commonStore } = useStores();
 </script>
 
 <template>
+  <confirm />
   <loader :isVisible="commonStore.isLoading" />
   <notification
-    :isShowed="commonStore.notification.isShowed"
-    :text="commonStore.notification.text"
+    :is-showed="Boolean(commonStore.currentNotification.text)"
+    :text="commonStore.notificationsQueue[0]?.text || ''"
   />
 
   <router-view v-slot="{ Component }">

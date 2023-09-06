@@ -6,10 +6,11 @@ import { Ref, onMounted, ref } from "vue";
 
 import DictionariesCollection from "@/components/dictionaries-collection.vue";
 import GenerateWord from "@/components/generate-word.vue";
+import { IDictionaryWord } from "@/types/interfaces";
 
 const { commonStore, dictionariesStore } = useStores();
 const router = useRouter();
-const words: Ref<string[]> = ref([]);
+const words: Ref<IDictionaryWord[]> = ref([]);
 
 const handleSignOut = async (): Promise<void> => {
   try {
@@ -19,9 +20,7 @@ const handleSignOut = async (): Promise<void> => {
     commonStore.useNotification("logout: successfully");
     router.push({ path: "/sign-in" });
   } catch (err) {
-    commonStore.useNotification(
-      "logout: oops.. unknown error, try again or reload the page (f5). sorry =("
-    );
+    commonStore.useNotification("logout: oops.. unknown error, try again or reload the page (f5). sorry =(");
   } finally {
     commonStore.finishLoading();
   }
@@ -29,44 +28,29 @@ const handleSignOut = async (): Promise<void> => {
 
 onMounted(async () => {
   dictionariesStore.clearDictionariesList();
-  words.value.length = 0;
 
   await dictionariesStore.fetchDictionaries();
   dictionariesStore.sortByPinned();
 
-  words.value.push(
-    ...dictionariesStore.dictionaries.reduce(
-      (totalWords: string[], dictionary) => {
-        const dictionaryWords = dictionary.words.reduce(
-          (dicWords: string[], word) => {
-            dicWords.push(word.word);
-            return dicWords;
-          },
-          []
-        );
-
-        totalWords.push(...dictionaryWords);
-        return totalWords;
-      },
-      []
-    )
-  );
+  words.value = [
+    ...dictionariesStore.dictionaries.reduce((totalWords: IDictionaryWord[], dictionary) => {
+      totalWords.push(...dictionary.words);
+      return totalWords;
+    }, []),
+  ];
 });
 </script>
 
 <template>
   <div class="page">
-    <main-button
-      class="log-out-btn"
-      :borderPosition="'left'"
-      @click="handleSignOut"
-      >log out from account</main-button
-    >
-    <generate-word :words="words" class="gen-btn" />
-    <dictionaries-collection
-      :title="'my collection'"
-      :data="dictionariesStore.dictionaries"
-    />
+    <main-button class="log-out-btn" borderPosition="top" @click="handleSignOut">log out from account</main-button>
+    <div class="header-buttons">
+      <generate-word :words="words" class="gen-btn" />
+      <router-link to="/favorite-dictionary">
+        <main-button class="favorite-words-button" borderPosition="right">favorite words</main-button>
+      </router-link>
+    </div>
+    <dictionaries-collection :title="'my collection'" :data="dictionariesStore.dictionaries" />
   </div>
 </template>
 
@@ -79,7 +63,17 @@ onMounted(async () => {
   margin-bottom: 15px;
 }
 
-.gen-btn {
+.header-buttons {
+  display: flex;
   margin-bottom: 35px;
+  button {
+    &:not(:last-child) {
+      margin-right: 15px;
+    }
+  }
+}
+
+.favorite-words-button {
+  height: 100%;
 }
 </style>

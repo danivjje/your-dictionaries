@@ -23,7 +23,7 @@ if (Array.isArray(route.params.id)) {
 
 const goEdit: Ref<boolean> = ref(false);
 const editedTitle: Ref<string> = ref("title");
-const creationInfoShowMode: Ref<boolean> = ref(getCurrentCreationInfoMode());
+const creationInfoShowMode: Ref<boolean> = ref(localStorage.getItem("creation-info-mode") === "true");
 
 const mutableTitleReference: Ref<null | ComponentPublicInstance> = ref(null);
 
@@ -34,6 +34,9 @@ const dictionaryIsPrivate: Ref<boolean> = ref(false);
 const handleToggleCreationInfoMode = (): void => {
   creationInfoShowMode.value = !creationInfoShowMode.value;
   localStorage.setItem("creation-info-mode", String(creationInfoShowMode.value));
+  setTimeout(() => {
+    window.scrollTo(0, document.body.scrollHeight);
+  }, 50);
 };
 
 const handleRenameDictionary = (): void => {
@@ -99,11 +102,6 @@ const handleToggleFavoriteWord = async (word: IDictionaryWord): Promise<void> =>
   }
 };
 
-function getCurrentCreationInfoMode(): boolean {
-  const currentValue: string | null = localStorage.getItem("creation-info-mode");
-  return currentValue === "true";
-}
-
 async function fetchDictionary(): Promise<void> {
   const foundDictionaryIndex: number = dictionariesStore.dictionaries.findIndex((item) => {
     return item.id === dictionaryId;
@@ -142,22 +140,30 @@ onMounted(() => {
       <button class="back-button icon-button"></button>
     </router-link>
 
-    <mutable-title
-      @keydown.enter="handleRenameDictionary"
-      class="title"
-      ref="mutableTitleReference"
-      v-model="editedTitle"
-      :isEdit="goEdit"
-    />
+    <div class="title-wrapper">
+      <mutable-title
+        @keydown.enter="handleRenameDictionary"
+        :inputStyles="{ 'padding-right': '135px' }"
+        :isEdit="goEdit"
+        ref="mutableTitleReference"
+        v-model="editedTitle"
+        class="title"
+      />
+      <transition name="title-rename-button">
+        <main-button v-if="goEdit" @click="handleRenameDictionary" class="title-rename-button" borderPosition="left">
+          rename
+        </main-button>
+      </transition>
+    </div>
     <div class="header-buttons">
       <generate-word class="gen-btn" :words="dictionaryWords" />
       <add-word-form @add-word="(newWord: string) => handleAddDictionaryWord(newWord)" />
     </div>
     <words-list
-      :words="dictionaryWords"
-      :show-creation-info="creationInfoShowMode"
-      @word-delete="(word) => handleDeleteDictionaryWord(word)"
       @toggle-favorite="(word) => handleToggleFavoriteWord(word)"
+      @word-delete="(word) => handleDeleteDictionaryWord(word)"
+      :show-creation-info="creationInfoShowMode"
+      :words="dictionaryWords"
     />
     <dictionary-control-panel
       @delete="handleDeleteDictionary"
@@ -187,11 +193,29 @@ onMounted(() => {
   left: 15px;
 }
 
-.title {
+.title-wrapper {
   margin-bottom: 25px;
-  font-size: 18px;
-  font-weight: 400;
   max-width: 30%;
+  width: 100%;
+  position: relative;
+  .title {
+    font-size: 18px;
+    font-weight: 400;
+    width: 100%;
+    input {
+      padding-top: 135px;
+    }
+    &-rename-button {
+      position: absolute;
+      height: 100%;
+      bottom: 0;
+      right: 0;
+      background-color: var(--body-color);
+      &:hover {
+        background-color: var(--body-color);
+      }
+    }
+  }
 }
 
 .header-buttons {
@@ -201,5 +225,18 @@ onMounted(() => {
 
 .gen-btn {
   margin-right: 20px;
+}
+
+.title-rename-button-enter-active,
+.title-rename-button-leave-active {
+  transition-property: opacity, transform;
+  transition-duration: 250ms;
+  transition-timing-function: cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.title-rename-button-enter-from,
+.title-rename-button-leave-to {
+  opacity: 0;
+  transform: scale(0);
 }
 </style>

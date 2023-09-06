@@ -35,9 +35,26 @@ onMounted(() => changeWord());
 </script>
 
 <template>
-  <main-button borderPosition="left" @click="changeWord">
+  <main-button class="generate-button" borderPosition="left" @click="changeWord">
+    <span class="shuffle-icon"></span>
     {{ generatedWord }}
   </main-button>
 </template>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+.generate-button {
+  display: flex;
+  align-items: center;
+}
+
+.shuffle-icon {
+  display: inline-block;
+  width: 23px;
+  height: 19px;
+  background-image: url("/icons/shuffle-icon.svg");
+  background-repeat: no-repeat;
+  background-size: cover;
+  margin-right: 10px;
+  transform: translateY(-1px);
+}
+</style>

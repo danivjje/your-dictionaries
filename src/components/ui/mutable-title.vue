@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { ref, Ref } from "vue";
+import { ref, Ref, StyleValue } from "vue";
 
 defineEmits(["update:modelValue"]);
-const { isEdit } = defineProps<{
+const { isEdit, inputStyles } = defineProps<{
   isEdit: boolean;
   modelValue: string;
+  inputStyles?: StyleValue;
 }>();
 
 const inputReference: Ref<null | HTMLInputElement> = ref(null);
@@ -21,10 +22,11 @@ defineExpose({
       <input
         v-else
         @input="$emit('update:modelValue', (<HTMLInputElement>$event.target).value)"
+        :style="inputStyles"
         :value="modelValue"
+        ref="inputReference"
         class="input left-border"
         type="text"
-        ref="inputReference"
       />
     </transition>
   </div>
@@ -38,8 +40,9 @@ div {
   display: flex;
   justify-content: center;
   align-items: flex-end;
-  h1 {
+  .title {
     font-size: 16px;
+    word-break: break-all;
     font-weight: 400;
     text-align: center;
   }
@@ -53,6 +56,7 @@ div {
   border: none;
   padding: 10px 25px;
   position: absolute;
+  height: 100%;
   bottom: 0;
   &:focus {
     outline: 3px solid var(--focus-color);

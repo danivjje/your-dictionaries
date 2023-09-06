@@ -1,17 +1,12 @@
 <script setup lang="ts">
-import { Ref, ref } from "vue";
-
 const emit = defineEmits(["delete", "rename", "change-private", "toggle-info"]);
-const { creationInfoCurrentMode, currentPrivateStatus } = defineProps<{
+const { currentPrivateStatus } = defineProps<{
   creationInfoCurrentMode: boolean;
   currentPrivateStatus: boolean;
 }>();
 
-const creationInfoMode: Ref<boolean> = ref(creationInfoCurrentMode);
-
 const handleToggleCreationInfoMode = () => {
-  creationInfoMode.value = !creationInfoMode.value;
-  emit("toggle-info", creationInfoMode.value);
+  emit("toggle-info");
 };
 </script>
 
@@ -20,7 +15,7 @@ const handleToggleCreationInfoMode = () => {
     <header>
       <span class="text-span">creation info mode:</span>
       <main-button @click="handleToggleCreationInfoMode" borderPosition="left">
-        {{ creationInfoMode ? "showed" : "hidden" }}
+        {{ creationInfoCurrentMode ? "showed" : "hidden" }}
       </main-button>
     </header>
     <footer>

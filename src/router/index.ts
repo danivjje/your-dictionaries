@@ -26,6 +26,11 @@ const routes: Readonly<RouteRecordRaw[]> = [
     component: () => import("@/views/dictionary-page.vue"),
   },
   {
+    name: RouteViews.FAVORITE_WORDS,
+    path: "/favorite-dictionary",
+    component: () => import("@/views/favorite-words-page.vue"),
+  },
+  {
     name: "test",
     path: "/test",
     component: () => import("@/views/test-page.vue"),

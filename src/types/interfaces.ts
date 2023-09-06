@@ -17,8 +17,13 @@ export interface IUserInformation {
 }
 
 export interface INotification {
+  text: string;
+}
+
+export interface IConfirm {
   isShowed: boolean;
   text: string;
+  response: null | boolean;
 }
 
 export interface IAuthErrorsMessages {

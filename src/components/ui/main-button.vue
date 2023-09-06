@@ -13,6 +13,9 @@ const { borderPosition } = defineProps<{
 
 <style scoped lang="scss">
 button {
+  color: var(--font-color);
+  line-height: 1;
+  font-weight: 400;
   cursor: pointer;
   padding: 10px 30px;
   background-color: var(--background-color);
